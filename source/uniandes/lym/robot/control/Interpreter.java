@@ -232,25 +232,23 @@ public class Interpreter {
 						int val_ = Integer.parseInt(variablesSys.get(pos_)[1]);
 						if (world.chipsToPick() > val_)
 							world.pickChips(val_);
-					}
-					else if(comandos.get(y+3).equals("Ballons")) {
+					} else if (comandos.get(y + 3).equals("Ballons")) {
 						int val_ = Integer.parseInt(variablesSys.get(pos_)[1]);
-						if (world.contarGlobos()>val_) {
-							world.putBalloons(val_);
+						if (world.contarGlobos() > val_) {
+							world.grabBalloons(val_);
 						}
 					} else {
 						output.append("Escoja una instruccion valida: \"Ballons\"/\"Chips\"");
 					}
 				} else {
 					if (comandos.get(y + 3).equals("Chips")) {
-						int val_ = Integer.parseInt(comandos.get(y+1));
+						int val_ = Integer.parseInt(comandos.get(y + 1));
 						if (world.chipsToPick() > val_)
 							world.pickChips(val_);
-					}
-					else if(comandos.get(y+3).equals("Ballons")) {
-						int val_ = Integer.parseInt(comandos.get(y+1));
-						if (world.contarGlobos()>val_) {
-							world.putBalloons(val_);
+					} else if (comandos.get(y + 3).equals("Ballons")) {
+						int val_ = Integer.parseInt(comandos.get(y + 1));
+						if (world.contarGlobos() > val_) {
+							world.grabBalloons(val_);
 						}
 					} else {
 						output.append("Escoja una instruccion valida: \"Ballons\"/\"Chips\"");
@@ -258,6 +256,56 @@ public class Interpreter {
 				}
 				break;
 			case "put":
+				int pos_1 = BuscarPosVariable(comandos.get(y + 1));
+				if (pos_1 > -1) {
+					if (comandos.get(y + 3).equals("Chips")) {
+						int val_ = Integer.parseInt(variablesSys.get(pos_1)[1]);
+						world.putChips(val_);
+					} else if (comandos.get(y + 3).equals("Ballons")) {
+						int val_ = Integer.parseInt(variablesSys.get(pos_1)[1]);
+						world.putBalloons(val_);
+
+					} else {
+						output.append("Escoja una instruccion valida: \"Ballons\"/\"Chips\"");
+					}
+				} else {
+					if (comandos.get(y + 3).equals("Chips")) {
+						int val_ = Integer.parseInt(comandos.get(y + 1));
+						world.putChips(val_);
+					} else if (comandos.get(y + 3).equals("Ballons")) {
+						int val_ = Integer.parseInt(comandos.get(y + 1));
+						world.putBalloons(val_);
+					} else {
+						output.append("Escoja una instruccion valida: \"Ballons\"/\"Chips\"");
+					}
+				}
+				break;
+			case "if":
+
+				String evalu2 = comandos.get(y + 1);
+				switch (evalu2) {
+				case "canMove":
+					String evalu3 = comandos.get(y + 2);
+					boolean cond = true;
+					MoveInDir(1, evalu3);
+					cond = sePudo;
+					if (cond) {
+						ArrayList<String> evalua4 = new ArrayList<String>();
+						for (int j = 5; y < comandos.size() - 1; j++) {
+							evalua4.add(comandos.get(j));
+						}
+						Parser(evalua4);
+					} else {
+						ArrayList<String> evalua5 = new ArrayList<String>();
+						for (int k = 7; y < comandos.size() - 1; k++) {
+							evalua5.add(comandos.get(k));
+						}
+						Parser(evalua5);
+					}
+				case "not":
+					if (comandos.get(index)) {
+					}
+				}
 				break;
 			}
 		}
@@ -303,24 +351,24 @@ public class Interpreter {
 	}
 
 	public boolean girar(String d) {
-		boolean giro = false;
+		boolean sePudo = false;
 		int O = world.getOrientacion();
 		if (d == "East") {
 			switch (O) {
 			case 1:
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			case 0:
 				world.turnRight();
 				world.turnRight();
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			case 3:
 				world.turnRight();
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 
 			}
@@ -328,18 +376,18 @@ public class Interpreter {
 			switch (O) {
 			case 0:
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			case 1:
 				world.turnRight();
 				world.turnRight();
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			case 2:
 				world.turnRight();
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 
 			}
@@ -347,18 +395,18 @@ public class Interpreter {
 			switch (O) {
 			case 2:
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			case 3:
 				world.turnRight();
 				world.turnRight();
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			case 0:
 				world.turnRight();
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 
 			}
@@ -366,22 +414,22 @@ public class Interpreter {
 			switch (O) {
 			case 3:
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			case 0:
 				world.turnRight();
 				world.turnRight();
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			case 1:
 				world.turnRight();
 				world.turnRight();
-				giro = true;
+				sePudo = true;
 				break;
 			}
 
 		}
-		return giro;
+		return sePudo;
 	}
 }
