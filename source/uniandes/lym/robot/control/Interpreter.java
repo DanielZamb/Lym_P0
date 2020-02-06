@@ -23,7 +23,7 @@ public class Interpreter {
 	private ArrayList<String[]> variablesSys;
 
 	public Interpreter() {
-		alfabeto = new String[] { "VARS", "ROBOT_R", "BEGIN", "END", ",","R","C","M","B","b","c" };
+		alfabeto = new String[] { "VARS", "ROBOT_R", "BEGIN", "END", ",", "R", "C", "M", "B", "b", "c" };
 		variablesSys = new ArrayList<String[]>();
 	}
 
@@ -78,8 +78,8 @@ public class Interpreter {
 							break;
 						case "ROBOT_R":
 							String instrucciones = "";
-							for(int y=1; y<comando.length;y++) {
-								instrucciones = instrucciones+" "+comando[y];
+							for (int y = 1; y < comando.length; y++) {
+								instrucciones = instrucciones + " " + comando[y];
 							}
 							RutinasRobot(instrucciones);
 							output.append("Rutina guardada \n");
@@ -156,6 +156,7 @@ public class Interpreter {
 	}
 
 	public void RutinasRobot(String instrucciones) {
+		instrucciones.replace(";", ":");
 		ArrayList<String> BloqueComandos = new ArrayList<String>();
 		StringTokenizer st = new StringTokenizer(instrucciones);
 		if (st.hasMoreTokens())
@@ -169,10 +170,10 @@ public class Interpreter {
 	}
 
 	public void Parser(ArrayList<String> comandos) {
+		StringBuffer output = new StringBuffer("SYSTEM RESPONSE: -->\n");
 		for (int y = 0; y < comandos.size() - 1; y++) {
 			String evaluado = comandos.get(y);
-			switch (evaluado) 
-			{
+			switch (evaluado) {
 			case "assign":
 				int pos = BuscarPosVariable(comandos.get(y + 3));
 				variablesSys.get(pos)[1] = comandos.get(y + 1);
@@ -181,42 +182,89 @@ public class Interpreter {
 			case "move":
 				String varBuscada = variablesSys.get(BuscarPosVariable(comandos.get(y + 1)))[0];
 				int val = Integer.parseInt(variablesSys.get(BuscarPosVariable(comandos.get(y + 1)))[1]);
-				if (comandos.get(y + 2).equals("toThe")) 
-				{
+				if (comandos.get(y + 2).equals("toThe")) {
 					if (varBuscada != null) {
 						MoveToThe(val, comandos.get(y + 3));
+					} else {
+						int n1 = Integer.parseInt(comandos.get(y + 1));
+						MoveToThe(n1, comandos.get(y + 3));
 					}
-					else {
-						int n1 = Integer.parseInt(comandos.get(y+1));
-						MoveToThe(n1, comandos.get(y+3));
-					}
-				} 
-				else if(comandos.get(y + 2).equals("inDir")) 
-				{
+				} else if (comandos.get(y + 2).equals("inDir")) {
 					if (varBuscada != null) {
 						MoveInDir(val, comandos.get(y + 3));
+					} else {
+						int n2 = Integer.parseInt(comandos.get(y + 1));
+						MoveInDir(n2, comandos.get(y + 3));
 					}
-					else {
-						int n2 = Integer.parseInt(comandos.get(y+1));
-						MoveInDir(n2, comandos.get(y+3));
-					}
-				}
-				else {
-					if (varBuscada!= null) {
+				} else {
+					if (varBuscada != null) {
 						world.moveForward(val);
 					} else {
-						int n3 = Integer.parseInt(comandos.get(y+1));
+						int n3 = Integer.parseInt(comandos.get(y + 1));
 						world.moveForward(n3);
-					} 
-					
+					}
+
 				}
 				break;
+			case "turn":
+				if (comandos.get(y + 1).equals("left")) {
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+				} else if (comandos.get(y + 1).equals("right"))
+					world.turnRight();
+				else if (comandos.get(y + 1).equals("around")) {
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+				} else {
+					output.append("Elija una instruccion valida \"left\"/\"right\"/\"around\"");
+				}
+				break;
+			case "face":
+				girar(comandos.get(y + 1));
+				break;
+			case "pick":
+				int pos_ = BuscarPosVariable(comandos.get(y + 1));
+				if (pos_ > -1) {
+					if (comandos.get(y + 3).equals("Chips")) {
+						int val_ = Integer.parseInt(variablesSys.get(pos_)[1]);
+						if (world.chipsToPick() > val_)
+							world.pickChips(val_);
+					}
+					else if(comandos.get(y+3).equals("Ballons")) {
+						int val_ = Integer.parseInt(variablesSys.get(pos_)[1]);
+						if (world.contarGlobos()>val_) {
+							world.putBalloons(val_);
+						}
+					} else {
+						output.append("Escoja una instruccion valida: \"Ballons\"/\"Chips\"");
+					}
+				} else {
+					if (comandos.get(y + 3).equals("Chips")) {
+						int val_ = Integer.parseInt(comandos.get(y+1));
+						if (world.chipsToPick() > val_)
+							world.pickChips(val_);
+					}
+					else if(comandos.get(y+3).equals("Ballons")) {
+						int val_ = Integer.parseInt(comandos.get(y+1));
+						if (world.contarGlobos()>val_) {
+							world.putBalloons(val_);
+						}
+					} else {
+						output.append("Escoja una instruccion valida: \"Ballons\"/\"Chips\"");
+					}
+				}
+				break;
+			case "put":
+				break;
 			}
+		}
 	}
-}
 
 	public int BuscarPosVariable(String pVar) {
-		int rta = 0;
+		int rta = -1;
 		for (int z = 0; z < variablesSys.size() - 1; z++) {
 			for (int j = 0; j < variablesSys.get(z).length - 1; j++) {
 				if (pVar.equals(variablesSys.get(j))) {
@@ -245,77 +293,95 @@ public class Interpreter {
 
 	public void MoveInDir(int n, String d) {
 		StringBuffer output = new StringBuffer("SYSTEM RESPONSE: -->\n");
-		int O = world.getOrientacion();
-		if (d == "East") {
-			switch(O) {
-			case 1:
-				world.turnRight();
-				break;
-			case 0:
-				world.turnRight();
-				world.turnRight();
-				world.turnRight();
-				break;
-			case 3:
-				world.turnRight();
-				world.turnRight();
-				break;
-			
-			}
-			world.moveForward(n);
-		} else if (d == "West") {
-			switch(O) {
-			case 0:
-				world.turnRight();
-				break;
-			case 1:
-				world.turnRight();
-				world.turnRight();
-				world.turnRight();
-				break;
-			case 2:
-				world.turnRight();
-				world.turnRight();
-				break;
-			
-			}
-			world.moveForward(n);
-		} else if (d == "North") {
-			switch(O) {
-			case 2:
-				world.turnRight();
-				break;
-			case 3:
-				world.turnRight();
-				world.turnRight();
-				world.turnRight();
-				break;
-			case 0:
-				world.turnRight();
-				world.turnRight();
-				break;
-			
-			}
-			world.moveForward(n);
-		} else if (d == "South") {
-			switch(O) {
-			case 3:
-				world.turnRight();
-				break;
-			case 0:
-				world.turnRight();
-				world.turnRight();
-				world.turnRight();
-				break;
-			case 1:
-				world.turnRight();
-				world.turnRight();
-				break;
-			
-			}
+		boolean giro = false;
+		giro = girar(d);
+		if (giro) {
 			world.moveForward(n);
 		} else {
 			output.append(" Porfavor ingrese alguna de las direcciones validas East/West/North/South");
 		}
+	}
+
+	public boolean girar(String d) {
+		boolean giro = false;
+		int O = world.getOrientacion();
+		if (d == "East") {
+			switch (O) {
+			case 1:
+				world.turnRight();
+				giro = true;
+				break;
+			case 0:
+				world.turnRight();
+				world.turnRight();
+				world.turnRight();
+				giro = true;
+				break;
+			case 3:
+				world.turnRight();
+				world.turnRight();
+				giro = true;
+				break;
+
+			}
+		} else if (d == "West") {
+			switch (O) {
+			case 0:
+				world.turnRight();
+				giro = true;
+				break;
+			case 1:
+				world.turnRight();
+				world.turnRight();
+				world.turnRight();
+				giro = true;
+				break;
+			case 2:
+				world.turnRight();
+				world.turnRight();
+				giro = true;
+				break;
+
+			}
+		} else if (d == "North") {
+			switch (O) {
+			case 2:
+				world.turnRight();
+				giro = true;
+				break;
+			case 3:
+				world.turnRight();
+				world.turnRight();
+				world.turnRight();
+				giro = true;
+				break;
+			case 0:
+				world.turnRight();
+				world.turnRight();
+				giro = true;
+				break;
+
+			}
+		} else if (d == "South") {
+			switch (O) {
+			case 3:
+				world.turnRight();
+				giro = true;
+				break;
+			case 0:
+				world.turnRight();
+				world.turnRight();
+				world.turnRight();
+				giro = true;
+				break;
+			case 1:
+				world.turnRight();
+				world.turnRight();
+				giro = true;
+				break;
+			}
+
+		}
+		return giro;
 	}
 }
