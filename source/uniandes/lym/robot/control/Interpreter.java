@@ -307,6 +307,26 @@ public class Interpreter {
 					}
 				}
 				break;
+			case "not":
+				if (comandos.get(y + 2) == "canMove") {
+
+					MoveInDir(1, evalu3);
+					sePudo = false;
+					if (sePudo) {
+						ArrayList<String> evalua5 = new ArrayList<String>();
+						for (int k = 7; y < comandos.size() - 1; k++) {
+							evalua5.add(comandos.get(k));
+						}
+						Parser(evalua5);
+					} else {
+						ArrayList<String> evalua4 = new ArrayList<String>();
+						for (int j = 5; y < comandos.size() - 1; j++) {
+							evalua4.add(comandos.get(j));
+						}
+						Parser(evalua4);
+					}
+				}
+				break;
 			}
 		}
 	}
